@@ -143,7 +143,21 @@ Command: Enter [ vi /etc/fstab ]
 
 💡Tips: The ***`s905x`*** and ***`s905w`*** boxs currently only support `5.4.*` kernels, Cannot use kernel version 5.10 and above. Please add kernel substitution variables when compiling these two models of devices. Other devices can be freely selected.
 
-- ### Use GitHub Action to build instructions
+- ### Local build instructions
+
+1. Install the necessary packages (E.g Ubuntu 20.04 LTS user)
+```yaml
+sudo apt-get update -y
+sudo apt-get full-upgrade -y
+sudo apt-get install -y $(curl -fsSL git.io/ubuntu-2004-server)
+```
+2. Clone the repository to the local. `git clone --depth 1 https://github.com/ophub/amlogic-s9xxx-armbian.git`
+
+3. Create the `build/output/images` folder, and upload the Armbian image ( Eg: `Armbian_21.11.0-trunk_Lepotato_buster_current_5.10.80.img` ) to this `~/amlogic-s9xxx-armbian/build/output/images` directory. Please keep the release version number (e.g. `21.11.0`) and kernel version number (e.g. `5.10.80`) in the name of the original Armbian image file, and will be used as substitution parameters when naming the output firmware during reconstruction.
+
+4. Enter the `~/amlogic-s9xxx-armbian` root directory. And run Eg: `sudo ./rebuild -d -b s905x3 -k 5.4.160` to build armbian for `amlogic s9xxx`. The generated Armbian image is in the `build/output/images` directory under the root directory.
+
+- ### Use GitHub Action to build
 
 1. Workflows configuration in [.yml](.github/workflows) files. Set the armbian `SOC` you want to build in `Rebuild Armbian for amlogic s9xxx`.
 
@@ -182,18 +196,6 @@ You can use other methods to build the Armbian system, or use the general versio
 | ${{ env.PACKAGED_OUTPUTPATH }}           | ${PWD}/out              | OpenWrt firmware storage path |
 | ${{ env.PACKAGED_OUTPUTDATE }}           | 2021.04.21.1058         | Packing date                  |
 | ${{ env.PACKAGED_STATUS }}               | success / failure       | Package status                |
-
-- ### Local build instructions
-
-1. Install the necessary packages (E.g Ubuntu 20.04 LTS user)
-```yaml
-sudo apt-get update -y
-sudo apt-get full-upgrade -y
-sudo apt-get install -y $(curl -fsSL git.io/ubuntu-2004-server)
-```
-2. Clone the repository to the local. `git clone --depth 1 https://github.com/ophub/amlogic-s9xxx-armbian.git`
-3. Create the `build/output/images` folder, and upload the Armbian image ( Eg: `Armbian_21.11.0-trunk_Lepotato_buster_current_5.10.80.img` ) to this `~/amlogic-s9xxx-armbian/build/output/images` directory. Please keep the release version number (e.g. `21.11.0`) and kernel version number (e.g. `5.10.80`) in the name of the original Armbian image file, and will be used as substitution parameters when naming the output firmware during reconstruction.
-4. Enter the `~/amlogic-s9xxx-armbian` root directory. And run Eg: `sudo ./rebuild -d -b s905x3 -k 5.4.160` to build armbian for `amlogic s9xxx`. The generated Armbian image is in the `build/output/images` directory under the root directory.
 
 ## Compile a custom kernel
 

@@ -143,6 +143,22 @@ armbian-tf
 
 💡提示：当前 ***`s905x`*** 和 ***`s905w`*** 系列的盒子只支持使用 `5.4.*` 内核，不能使用 5.10.* 或更高版本，请在编译时指定替换内核。其他型号的盒子可任选内核版本使用。
 
+- ### 本地化打包
+
+1. 安装必要的软件包（如 Ubuntu 20.04 LTS 用户）
+
+```yaml
+sudo apt-get update -y
+sudo apt-get full-upgrade -y
+sudo apt-get install -y $(curl -fsSL git.io/ubuntu-2004-server)
+```
+
+2. 克隆仓库到本地 `git clone --depth 1 https://github.com/ophub/amlogic-s9xxx-armbian.git`
+
+3. 在根目录下创建文件夹 `build/output/images` ，并上传 Armbian 镜像文件 ( 如：`Armbian_21.11.0-trunk_Lepotato_buster_current_5.10.80.img` ) 到 `~/amlogic-s9xxx-armbian/build/output/images` 目录里。原版 Armbian 镜像文件名称中的发行版本号（如：`21.11.0`）和内核版本号（如：`5.10.80`）请保留，重构时将作为输出固件命名时的代入参数使用。
+
+4. 进入 `~/amlogic-s9xxx-armbian` 根目录，然后运行 `sudo ./rebuild -d -b s905x3 -k 5.4.160` 命令即可生成指定 soc 的 Armbian 镜像文件。生成的文件保存在 `build/output/images` 目录里。
+
 - ### 使用 GitHub Action 进行编译
 
 1. 关于 Workflows 文件的配置在 [.yml](.github/workflows) 文件里。可以设置需要编译的盒子的 `SOC` 等参数，具体详见 `Rebuild Armbian for amlogic s9xxx` 节点。
@@ -182,20 +198,6 @@ armbian-tf
 | ${{ env.PACKAGED_OUTPUTPATH }}           | ${PWD}/out              | 打包后的固件所在文件夹的路径  |
 | ${{ env.PACKAGED_OUTPUTDATE }}           | 2021.04.21.1058         | 打包日期                   |
 | ${{ env.PACKAGED_STATUS }}               | success / failure       | 打包状态。成功 / 失败       |
-
-- ### 本地化打包
-
-1. 安装必要的软件包（如 Ubuntu 20.04 LTS 用户）
-
-```yaml
-sudo apt-get update -y
-sudo apt-get full-upgrade -y
-sudo apt-get install -y $(curl -fsSL git.io/ubuntu-2004-server)
-```
-
-2. 克隆仓库到本地 `git clone --depth 1 https://github.com/ophub/amlogic-s9xxx-armbian.git`
-3. 在根目录下创建文件夹 `build/output/images` ，并上传 Armbian 镜像文件 ( 如：`Armbian_21.11.0-trunk_Lepotato_buster_current_5.10.80.img` ) 到 `~/amlogic-s9xxx-armbian/build/output/images` 目录里。原版 Armbian 镜像文件名称中的发行版本号（如：`21.11.0`）和内核版本号（如：`5.10.80`）请保留，重构时将作为输出固件命名时的代入参数使用。
-4. 进入 `~/amlogic-s9xxx-armbian` 根目录，然后运行 `sudo ./rebuild -d -b s905x3 -k 5.4.160` 命令即可生成指定 soc 的 Armbian 镜像文件。生成的文件保存在 `build/output/images` 目录里。
 
 ## 编译自定义内核
 
