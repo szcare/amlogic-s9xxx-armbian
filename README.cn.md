@@ -151,6 +151,38 @@ armbian-tf
 
 3. 再次编译：如果 [Releases](https://github.com/ophub/amlogic-s9xxx-armbian/releases) 中有已经编译好的 `Armbian_.*-trunk_.*.img.gz` 文件，你只是想再次制作其他不同 soc 的盒子，可以跳过 Armbian 源文件的编译，直接进行二次制作。在 [Action](https://github.com/ophub/amlogic-s9xxx-armbian/actions) 页面中选择  ***`Use Releases file to build armbian`*** ，点击 ***`Run workflow`*** 按钮即可二次编译。
 
+- ### 仅单独引入 GitHub Action 进行 Armbian 重构
+
+你可以使用其他方式构建 Armbian 系统，或者使用 Armbian 官方提供的通用版固件，仅在流程控制文件 .github/workflows/.yml 中引入本仓库的脚本进行 Armbian 重构，适配 Amlogic S9xxx 系列盒子的使用，代码如下:
+
+```yaml
+- name: Rebuild Armbian for Amlogic s9xxx
+  uses: ophub/amlogic-s9xxx-armbian@main
+  with:
+    armbian_path: build/output/images/*.img
+    armbian_soc: s905d_s905x3_s922x_s905x
+    armbian_kernel: 5.10.80_5.4.160
+```
+
+- GitHub Action 输入参数说明
+
+| 参数                   | 默认值                  | 说明                                            |
+|------------------------|------------------------|------------------------------------------------|
+| armbian_path         | no                     | 设置原版 Armbian 文件的路径，支持使用当前工作流中的文件路径如 `build/output/images/*.img` ，也支持使用网络下载地址如： `https://github.com/*/releases/*/*/Armbian_21.11.0-*_buster_*_5.10.83.img.gz` |
+| armbian_soc        | s905d_s905x3           | 设置打包盒子的 `SOC` ，可指定单个盒子如 `s905x3` ，可选择多个盒子用_连接如 `s905x3_s905d` 。各盒子的SoC代码为：`s905x3`, `s905x2`, `s905x`, `s905w`, `s905d`, `s922x`, `s922x-n2`, `s912`。说明：`s922x-n2` 是 `s922x-odroid-n2` |
+| version_branch         | stable                 | 指定内核 [版本分支](https://github.com/ophub/kernel/tree/main/pub) 名称，如 `stable` 。指定的名称须与分支目录名称相同。默认使用 `stable` 分支版本。 |
+| armbian_kernel         | 5.10.80_5.4.160        | 设置内核版本，[kernel](https://github.com/ophub/kernel/tree/main/pub/stable) 库里收藏了众多 Flippy 的原版内核，可以查看并选择指定。 |
+| auto_kernel            | true                   | 设置是否自动采用同系列最新版本内核。当为 `true` 时，将自动在内核库中查找在 `amlogic_kernel` 中指定的内核如 5.4.160 的 5.4 同系列是否有更新的版本，如有 5.4.160 之后的最新版本时，将自动更换为最新版。设置为 `false` 时将编译指定版本内核。默认值：`true` |
+| armbian_size           | 2748                   | 设置固件 ROOTFS 分区的大小                         |
+
+- GitHub Action 输出变量说明
+
+| 参数                                      | 默认值                  | 说明                       |
+|------------------------------------------|-------------------------|---------------------------|
+| ${{ env.PACKAGED_OUTPUTPATH }}           | ${PWD}/out              | 打包后的固件所在文件夹的路径  |
+| ${{ env.PACKAGED_OUTPUTDATE }}           | 2021.04.21.1058         | 打包日期                   |
+| ${{ env.PACKAGED_STATUS }}               | success / failure       | 打包状态。成功 / 失败       |
+
 - ### 本地化打包
 
 1. 安装必要的软件包（如 Ubuntu 20.04 LTS 用户）
@@ -162,8 +194,8 @@ sudo apt-get install -y $(curl -fsSL git.io/ubuntu-2004-server)
 ```
 
 2. 克隆仓库到本地 `git clone --depth 1 https://github.com/ophub/amlogic-s9xxx-armbian.git`
-3. 在根目录下创建文件夹 `build/output/images` ，并上传采用 `lepotato` 分支生成的 Armbian 镜像文件 ( 如：`Armbian_21.11.0-trunk_Lepotato_buster_current_5.10.80.img` ) 到 `~/amlogic-s9xxx-armbian/build/output/images` 目录里。
-4. 进入 `~/amlogic-s9xxx-armbian` 根目录，然后运行 `sudo ./rebuild s905x3` 命令即可生成指定 soc 的 Armbian 镜像文件。生成的文件保存在 `build/output/images` 目录里。
+3. 在根目录下创建文件夹 `build/output/images` ，并上传 Armbian 镜像文件 ( 如：`Armbian_21.11.0-trunk_Lepotato_buster_current_5.10.80.img` ) 到 `~/amlogic-s9xxx-armbian/build/output/images` 目录里。原版 Armbian 镜像文件名称中的发行版本号（如：`21.11.0`）和内核版本号（如：`5.10.80`）请保留，重构时将作为输出固件命名时的代入参数使用。
+4. 进入 `~/amlogic-s9xxx-armbian` 根目录，然后运行 `sudo ./rebuild -d -b s905x3 -k 5.4.160` 命令即可生成指定 soc 的 Armbian 镜像文件。生成的文件保存在 `build/output/images` 目录里。
 
 ## 编译自定义内核
 
