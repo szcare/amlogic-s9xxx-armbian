@@ -38,23 +38,28 @@ runs:
       run: |
         cd ${GITHUB_ACTION_PATH}
         echo -e "Armbian rebuild actions path: ${PWD}"
-        [ -z "${{ inputs.armbian_path }}" ] && echo -e "The [ armbian_path ] variable must be specified." && exit 1
+
+        armbian_file="${{ inputs.armbian_path }}"
         armbian_filepath="build/output/images"
+        echo -e "Get armbian file input parameters: [ ${armbian_file} ]"
+        [ -z "${armbian_file}" ] && echo -e "The [ armbian_path ] variable must be specified." && exit 1
         [ -d "${armbian_filepath}" ] || sudo mkdir -p ${armbian_filepath}
-        if [[ ${{ inputs.armbian_path }} == http* ]]; then
-          echo -e "wget: ${{ inputs.armbian_path }}"
-          sudo wget ${{ inputs.armbian_path }} -q -P ${armbian_filepath}
+        if [[ "${armbian_file}" == http* ]]; then
+          echo -e "Use wget to download file: [ ${armbian_file} ]"
+          sudo wget ${armbian_file} -q -P ${armbian_filepath} 2>/dev/null
+        elif [[ "${armbian_file:0:6}" != "build/" && "${armbian_file:0:8}" != "./build/" ]]; then
+          echo -e "Copy files: [ ${armbian_file} ]"
+          sudo cp -f ${GITHUB_WORKSPACE}/${armbian_file} ${armbian_filepath} 2>/dev/null
         else
-          echo -e "copy: ${{ inputs.armbian_path }}"
-          sudo cp -f ${GITHUB_WORKSPACE}/${{ inputs.armbian_path }} ${armbian_filepath}
+          echo -e "Use armbian files: [ ${armbian_file} ]"
         fi
         sync
         echo -e "About the ${armbian_filepath} directory: \n $(ls ${armbian_filepath} -l 2>/dev/null)"
 
         cd ${armbian_filepath}
-        echo -e "Unzip the armbian file..."
+        echo -e "Check the armbian file format..."
         down_file="$(ls . -l 2>/dev/null | grep "^-" | awk '{print $9}' | head -n 1)"
-        [ -z "${down_file}" ] && echo -e "The [ ${{ inputs.armbian_path }} ] is invalid." && exit 1
+        [ -z "${down_file}" ] && echo -e "The [ ${armbian_file} ] is invalid." && exit 1
         [ "${down_file:0-7}" == ".img.gz" ] && sudo gzip -df ${down_file} 2>/dev/null && sync
         [ "${down_file:0-7}" == ".img.xz" ] && sudo xz -d ${down_file} 2>/dev/null && sync
         [ "${down_file:0-4}" == ".zip" ] && sudo unzip -o ${down_file} 2>/dev/null && sync
